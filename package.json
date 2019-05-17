@@ -1,0 +1,46 @@
+{
+  "name": "react-native-reportable",
+  "version": "0.1.3",
+  "description": "Easy to use declarative report for React Native",
+  "typings": "typings/react-native-animatable.d.ts",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "lint": "./node_modules/.bin/eslint ./*.js"
+  },
+  "author": {
+    "name": "Smadey",
+    "email": "smadey@163.ccom"
+  },
+  "keywords": [
+    "react",
+    "react-component",
+    "react-native",
+    "react-native-component",
+    "report",
+    "reportable",
+    "mobile",
+    "android",
+    "ios"
+  ],
+  "homepage": "https://github.com/smadey/react-native-reportable",
+  "bugs": {
+    "url": "https://github.com/smadey/react-native-reportable/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/smadey/react-native-reportable.git"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-plugin-import": "^2.17.2",
+    "eslint-plugin-jsx-a11y": "^6.2.1",
+    "eslint-plugin-react": "^7.13.0"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0",
+    "react-native": "^0.59.0"
+  }
+}
