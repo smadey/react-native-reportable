@@ -34,7 +34,7 @@ MyCustomComponent = Reportable.create(MyCustomComponent);
 |**`reportWOffset`**|The width offset of reportable node. |`0`|
 |**`reportHOffset`**|The width offset of reportable node. |`0`|
 |**`reportItemKey`**|The key of reportable list's reportable item. ||
-|**`report-*`**|The report data prop. |`0`|
+|**`report-*`**|The report data prop. ||
 
 ### Imperative Usage
 #### Refreshable FlatList
