@@ -4,6 +4,9 @@
  *
  * @format
  */
+const path = require('path')
+// const metro = require('metro')
+
 module.exports = {
   transformer: {
     getTransformOptions: async () => ({
@@ -13,4 +16,13 @@ module.exports = {
       },
     }),
   },
-};
+  resolver: {
+    // blacklistRE: metro.createBlacklist([path.resolve(__dirname, '../node_modules')]),
+    extraNodeModules: new Proxy({}, {
+      get: (target, name) => path.join(__dirname, `node_modules/${name}`),
+    }),
+  },
+  watchFolders: [
+    path.resolve(__dirname, '..'),
+  ],
+}

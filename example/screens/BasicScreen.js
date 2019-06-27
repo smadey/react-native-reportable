@@ -5,7 +5,8 @@ import {
   Text,
   View,
 } from 'react-native'
-import Reportable from 'react-native-reportable'
+
+import Reportable from '../..'
 
 const onReportVisible = (data) => {
   console.warn(JSON.stringify(data))
@@ -50,41 +51,41 @@ function BasicScreen() {
       reportHOffset={-100}
       report-id="basic"
     >
-      <Reportable.Reporter report-id="r1">
-        <Reportable.TouchableReporter report-id="v1" report-v="1">
+      <Reportable.View.Visible report-id="r1">
+        <Reportable.TouchableHighlight.Visible report-id="v1" report-v="1">
           <View style={styles.v1}>
             <Text style={styles.txt}>500</Text>
           </View>
-        </Reportable.TouchableReporter>
-        <Reportable.Reporter report-id="r2">
-          <Reportable.TouchableReporter report-id="v2" report-v="2">
+        </Reportable.TouchableHighlight.Visible>
+        <Reportable.View.Visible report-id="r2">
+          <Reportable.TouchableHighlight.Visible report-id="v2" report-v="2">
             <View style={styles.v2}>
               <Text style={styles.txt}>350</Text>
             </View>
-          </Reportable.TouchableReporter>
-        </Reportable.Reporter>
-        <Reportable.TouchableReporter report-id="v3" report-v="3">
+          </Reportable.TouchableHighlight.Visible>
+        </Reportable.View.Visible>
+        <Reportable.TouchableHighlight.Visible report-id="v3" report-v="3">
           <View style={styles.v3}>
             <Text style={styles.txt}>200</Text>
           </View>
-        </Reportable.TouchableReporter>
-      </Reportable.Reporter>
+        </Reportable.TouchableHighlight.Visible>
+      </Reportable.View.Visible>
       <Reportable.ScrollView report-id="s2" reportWOffset={-30} horizontal={true} showsHorizontalScrollIndicator={false} style={styles.ff}>
-        <Reportable.TouchableReporter report-id="h1" report-h="1">
+        <Reportable.TouchableHighlight.Visible report-id="h1" report-h="1">
           <View style={styles.h1}>
             <Text style={styles.txt}>300x100</Text>
           </View>
-        </Reportable.TouchableReporter>
-        <Reportable.TouchableReporter report-id="h2" report-h="2">
+        </Reportable.TouchableHighlight.Visible>
+        <Reportable.TouchableHighlight.Visible report-id="h2" report-h="2">
           <View style={styles.h2}>
             <Text style={styles.txt}>200x100</Text>
           </View>
-        </Reportable.TouchableReporter>
-        <Reportable.TouchableReporter report-id="h3" report-h="3">
+        </Reportable.TouchableHighlight.Visible>
+        <Reportable.TouchableHighlight.Visible report-id="h3" report-h="3">
           <View style={styles.h3}>
             <Text style={styles.txt}>100x100</Text>
           </View>
-        </Reportable.TouchableReporter>
+        </Reportable.TouchableHighlight.Visible>
       </Reportable.ScrollView>
     </Reportable.ScrollView>
   )
