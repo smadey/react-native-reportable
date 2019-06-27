@@ -195,7 +195,12 @@ class ReportableNode {
 
   reportVisible(isVisible) {
     const node = this
-    if (node.isHidden) return
+
+    let cur = node
+    while (cur) {
+      if (cur.isHidden) return
+      cur = cur.parent
+    }
 
     if (node.isReporter) {
       if (!node.isVisited && (node.isItemReporter ? isVisible : node.isVisible())) {
@@ -243,6 +248,7 @@ class ReportableNode {
 
   refresh() {
     this.clearVisited()
+    this.reportVisible()
   }
 }
 
@@ -253,7 +259,7 @@ function useEvent(name, node, props) {
   return {
     ...props,
     [name]: React.useCallback((event) => {
-      node[name] && node[name](event) // eslint-disable-line no-unused-expressions
+      node[name] && node[name](event)
       return handler && handler(event)
     }, [handler]),
   }
@@ -297,7 +303,6 @@ export default function createReportableComponent(Component, {
     useHooks = useEmpty
   }
 
-  /* eslint-disable react/prop-types */
   function ReportableComponent({ reportableRef, ...props }, forwardedRef) {
     const parent = React.useContext(ReportableContext)
     const node = React.useMemo(() => new ReportableNode({ parent, isReporter }), [])
@@ -311,11 +316,19 @@ export default function createReportableComponent(Component, {
     props = useHooks(node, props)
 
     if (reportableRef) {
-      reportableRef.current = node
+      if (typeof reportableRef === 'function') {
+        reportableRef(node)
+      } else {
+        reportableRef.current = node
+      }
     }
     React.useEffect(() => () => {
       if (reportableRef) {
-        reportableRef.current = null
+        if (typeof reportableRef === 'function') {
+          reportableRef(null)
+        } else {
+          reportableRef.current = null
+        }
       }
       node.destroy()
     }, [])
@@ -325,12 +338,12 @@ export default function createReportableComponent(Component, {
         {
           Component
             ? <Component ref={forwardedRef} {...props} />
-            : props.children // eslint-disable-line react/destructuring-assignment
+            : props.children
         }
       </ReportableContext.Provider>
     )
   }
-  ReportableComponent = React.forwardRef(ReportableComponent) // eslint-disable-line no-func-assign
+  ReportableComponent = React.forwardRef(ReportableComponent)
 
   const displayName = Component && (Component.displayName || Component.name)
   ReportableComponent.displayName = displayName ? `Reportable(${displayName})` : 'Reportable'
