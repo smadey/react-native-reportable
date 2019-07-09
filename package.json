@@ -1,6 +1,6 @@
 {
   "name": "react-native-reportable",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Easy to use declarative report for React Native",
   "main": "index.js",
   "license": "MIT",
@@ -9,7 +9,7 @@
   },
   "author": {
     "name": "Smadey",
-    "email": "smadey@163.ccom"
+    "email": "smadey@163.com"
   },
   "keywords": [
     "react",

@@ -315,22 +315,24 @@ export default function createReportableComponent(Component, {
 
     props = useHooks(node, props)
 
-    if (reportableRef) {
-      if (typeof reportableRef === 'function') {
-        reportableRef(node)
-      } else {
-        reportableRef.current = node
-      }
-    }
     React.useEffect(() => () => {
       if (reportableRef) {
         if (typeof reportableRef === 'function') {
-          reportableRef(null)
+          reportableRef(node)
         } else {
-          reportableRef.current = null
+          reportableRef.current = node
         }
       }
-      node.destroy()
+      return () => {
+        if (reportableRef) {
+          if (typeof reportableRef === 'function') {
+            reportableRef(null)
+          } else {
+            reportableRef.current = null
+          }
+        }
+        node.destroy()
+      }
     }, [])
 
     return (
