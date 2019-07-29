@@ -62,7 +62,9 @@ class ReportableNode {
     const data = {}
     Object.keys(props).forEach((name) => {
       if (name.indexOf('report-') === 0) {
-        data[name.replace('report-', '')] = props[name]
+        if (props[name] != null) {
+          data[name.replace('report-', '')] = props[name]
+        }
         delete props[name]
       }
     })
