@@ -317,7 +317,7 @@ export default function createReportableComponent(Component, {
 
     props = useHooks(node, props)
 
-    React.useEffect(() => () => {
+    React.useEffect(() => {
       if (reportableRef) {
         if (typeof reportableRef === 'function') {
           reportableRef(node)
