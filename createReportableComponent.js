@@ -1,26 +1,41 @@
 import React from 'react'
 import {
-  InteractionManager,
   UIManager,
 } from 'react-native'
 
 const log = console.log.bind(console) // eslint-disable-line no-console
 const merge = (obj1, obj2) => Object.assign({}, obj1, obj2)
-const round = Math.round
+const round = num => Math.round(num) || 0
 
 let id = 0
 class ReportableNode {
-  constructor({ parent, isReporter }) {
+  constructor({ parent, isReporter, isContainer }) {
     const node = this
 
     node.id = id++ // eslint-disable-line no-plusplus
     node.parent = parent
     node.children = []
     node.isReporter = !!isReporter
+    node.isContainer = !!isContainer
 
     if (parent) {
       parent.children.push(node)
     }
+  }
+
+  destroy() {
+    const node = this
+    const parent = node.parent
+    if (parent) {
+      const index = parent.children.indexOf(node)
+      if (index > -1) {
+        parent.children.splice(index, 1)
+      }
+    }
+    node.children.forEach((child) => {
+      child.destroy()
+    })
+    node.isDestroyed = true
   }
 
   get(key) {
@@ -41,6 +56,35 @@ class ReportableNode {
     }
   }
 
+  get onReportVisible() {
+    return this.get('onReportVisible') || log
+  }
+
+  set onReportVisible(value) {
+    this.set('onReportVisible', value)
+  }
+
+  get onReportPress() {
+    return this.get('onReportPress') || log
+  }
+
+  set onReportPress(value) {
+    this.set('onReportPress', value)
+  }
+
+  get onMergeData() {
+    return this.get('onMergeData') || merge
+  }
+
+  set onMergeData(value) {
+    this.set('onMergeData', value)
+  }
+
+  get mergedData() {
+    const node = this
+    return node.onMergeData((node.parent && node.parent.mergedData) || {}, node.data || {})
+  }
+
   update({
     onReportVisible, onReportPress, onMergeData,
     reportWOffset, reportHOffset,
@@ -49,12 +93,12 @@ class ReportableNode {
   }) {
     const node = this
 
-    node.set('onReportVisible', onReportVisible)
-    node.set('onReportPress', onReportPress)
-    node.set('onMergeData', onMergeData)
+    node.onReportVisible = onReportVisible
+    node.onReportPress = onReportPress
+    node.onMergeData = onMergeData
 
-    node.reportWOffset = reportWOffset || 0
-    node.reportHOffset = reportHOffset || 0
+    node.reportWOffset = round(reportWOffset)
+    node.reportHOffset = round(reportHOffset)
 
     node.isItemReporter = reportItemKey != null
     node.reportItemKey = reportItemKey
@@ -73,68 +117,56 @@ class ReportableNode {
     return props
   }
 
-  destroy() {
+  measure() {
     const node = this
-    const parent = node.parent
-    if (parent) {
-      const index = parent.children.indexOf(node)
-      if (index > -1) {
-        parent.children.splice(index, 1)
+    if (!node.reactTag) return
+
+    /* eslint-disable no-multi-assign */
+    UIManager.measure(node.reactTag, (x, y, w, h, pageX, pageY) => {
+      if (node.isDestroyed) return
+
+      // Check if clipped by parent removeClippedSubviews prop
+      const isClipped = node.isClipped = w == null && h == null && pageX == null && pageY == null
+      if (isClipped) return
+
+      let parent = node.parent
+      let parentViewport
+      while (parent) {
+        if (parentViewport = parent.viewport) { // eslint-disable-line no-cond-assign
+          pageX += parentViewport.dx || 0
+          pageY += parentViewport.dy || 0
+        }
+        parent = parent.parent
       }
-    }
-    node.children.forEach((child) => {
-      child.destroy()
+
+      const x0 = round(pageX)
+      const y0 = round(pageY)
+
+      const prevViewport = node.viewport || {}
+      const nextViewport = node.viewport = {
+        dx: 0,
+        dy: 0,
+        ...prevViewport,
+        x0,
+        y0,
+        x1: x0 + round(w) + node.reportWOffset,
+        y1: y0 + round(h) + node.reportHOffset,
+      }
+
+      if (prevViewport.x0 === nextViewport.x0 && prevViewport.y0 === nextViewport.y0) {
+        node.reportVisible()
+      } else {
+        setTimeout(() => {
+          !node.isDestroyed && node.measure()
+        }, 500)
+      }
     })
-  }
-
-  get onReportVisible() {
-    return this.get('onReportVisible') || log
-  }
-
-  get onReportPress() {
-    return this.get('onReportPress') || log
-  }
-
-  get onMergeData() {
-    return this.get('onMergeData') || merge
-  }
-
-  get mergedData() {
-    const node = this
-    return node.onMergeData((node.parent && node.parent.mergedData) || {}, node.data || {})
   }
 
   onLayout(event) {
     const node = this
-    const target = event.target
-    node.measuring = true // 测量中标记位，防止在判断子元素是否可见时被忽略
-    InteractionManager.runAfterInteractions(() => {
-      UIManager.measure(target, (x, y, w, h, pageX, pageY) => {
-        let parent = node.parent
-        let parentViewport
-        while (parent) {
-          if (parentViewport = parent.viewport) { // eslint-disable-line no-cond-assign
-            pageX += parentViewport.dx || 0
-            pageY += parentViewport.dy || 0
-          }
-          parent = parent.parent
-        }
-
-        const x0 = round(pageX)
-        const y0 = round(pageY)
-        node.measuring = false
-        node.viewport = {
-          dx: 0,
-          dy: 0,
-          ...node.viewport,
-          x0,
-          y0,
-          x1: x0 + round(w) + node.reportWOffset,
-          y1: y0 + round(h) + node.reportHOffset,
-        }
-        node.reportVisible()
-      })
-    })
+    node.reactTag = event.target
+    node.measure()
   }
 
   onPress() {
@@ -178,10 +210,10 @@ class ReportableNode {
     let parentViewport
     let { x0, y0, x1, y1, dx, dy } = viewport // eslint-disable-line object-curly-newline
     while (parent) {
-      if (parent.measuring) {
-        return false
-      }
-      if (parentViewport = parent.viewport) { // eslint-disable-line no-cond-assign
+      if (parent.isContainer) {
+        parentViewport = parent.viewport
+        if (!parentViewport) return false
+
         dx += parentViewport.dx
         dy += parentViewport.dy
         x0 = Math.max(x0, parentViewport.x0 + dx)
@@ -195,7 +227,7 @@ class ReportableNode {
     return !(viewport.x0 > x1 || viewport.x1 < x0 || viewport.y0 > y1 || viewport.y1 < y0)
   }
 
-  reportVisible(isVisible) {
+  reportVisible(isItemVisible) {
     const node = this
 
     let cur = node
@@ -204,27 +236,32 @@ class ReportableNode {
       cur = cur.parent
     }
 
-    if (node.isReporter) {
-      if (!node.isVisited && (node.isItemReporter ? isVisible : node.isVisible())) {
+    if (node.isClipped) {
+      node.measure()
+      return
+    }
+
+    if (!node.isVisited) {
+      const isVisibleReporter = node.isItemReporter ? isItemVisible : (node.isReporter && node.isVisible())
+      if (isVisibleReporter) {
         node.isVisited = true
         node.onReportVisible(node.mergedData)
       }
     }
     if (node.children.length) {
-      const visibleChildren = node.visibleChildren || []
-      let reportedChildren = {} // 防止 key 相同的子元素上报多次
-      node.children.forEach((child) => {
-        if (child.isItemReporter) {
-          const reportItemKey = child.reportItemKey
-          if (visibleChildren.indexOf(reportItemKey) > -1 && !reportedChildren[reportItemKey]) {
-            reportedChildren[reportItemKey] = true
-            child.reportVisible(true)
+      const isInvisibleContainer = node.isContainer && !(node.isItemReporter ? isItemVisible : node.isVisible())
+      if (!isInvisibleContainer) {
+        const visibleChildren = node.visibleChildren || []
+        node.children.forEach((child) => {
+          if (child.isItemReporter) {
+            if (visibleChildren.indexOf(child.reportItemKey) > -1) {
+              child.reportVisible(true)
+            }
+          } else {
+            child.reportVisible()
           }
-        } else {
-          child.reportVisible()
-        }
-      })
-      reportedChildren = null
+        })
+      }
     }
   }
 
@@ -273,7 +310,6 @@ function useEmpty(node, props) {
 
 export default function createReportableComponent(Component, {
   isReporter,
-
   isLayoutable,
   isPressable,
   isScrollable,
@@ -281,11 +317,13 @@ export default function createReportableComponent(Component, {
 
   useHooks,
 } = {}) {
-  if (isPressable) {
-    isReporter = true
+  if (isReporter || isScrollable) {
+    isLayoutable = true
   }
 
-  const useLayout = isLayoutable || isScrollable
+  const isContainer = isLayoutable
+
+  const useLayout = isLayoutable
     ? useEvent.bind(null, 'onLayout')
     : useEmpty
 
@@ -307,7 +345,7 @@ export default function createReportableComponent(Component, {
 
   function ReportableComponent({ reportableRef, ...props }, forwardedRef) {
     const parent = React.useContext(ReportableContext)
-    const node = React.useMemo(() => new ReportableNode({ parent, isReporter }), [])
+    const node = React.useMemo(() => new ReportableNode({ parent, isReporter, isContainer }), [])
     props = node.update(props)
 
     props = useLayout(node, props)

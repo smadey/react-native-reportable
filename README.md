@@ -5,7 +5,7 @@ Easy to use declarative report for React Native
 `$ npm install --save react-native-reportable`
 
 ## Usage
-To report things you must use the `createReportableComponent` or `Reportable.create` composer. The common components `View` (includes `Container` & `Reporter`), `ScrollView`, `FlatList`, `SectionList`, `Text` and `Touchables` are precomposed and exposed under the `Reportable` namespace. If you have your own component that you wish to report, simply wrap it with a `Reportable.View` or compose it with:
+To report things you must use the `createReportableComponent` or `Reportable.create` composer. The common components `View` (includes `Container` & `Visible`), `ScrollView`, `FlatList`, `SectionList`, `Text` and `Touchables` are precomposed and exposed under the `Reportable` namespace. If you have your own component that you wish to report, simply wrap it with a `Reportable.View` or compose it with:
 
 ```js
 import Reportable from 'react-native-reportable';
@@ -15,7 +15,7 @@ MyCustomComponent = Reportable.create(MyCustomComponent);
 ### Declarative Usage
 #### Report Visible
 ```html
-<Reportable.View.Reporter style={{height: 100}} report-foo="bar" />
+<Reportable.View.Visible style={{height: 100}} report-foo="bar" />
 ```
 
 #### Report Press

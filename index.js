@@ -45,29 +45,27 @@ const mount = define.bind(null, Reportable)
 Reportable.create = create
 Reportable.mount = mount
 
+const commonChildren = {
+  Visible: { isReporter: true },
+}
+
 mount('View', View, null, {
   Container: { isLayoutable: true },
-  Visible: { isReporter: true, isLayoutable: true },
-  Reporter: { isReporter: true, isLayoutable: true },
+  Visible: { isReporter: true },
 })
 
-mount('Text', Text, null, {
-  Visible: { isLayoutable: true, isPressable: true },
-  Pressable: { isLayoutable: true, isPressable: true },
-  Reporter: { isReporter: true, isLayoutable: true },
-})
-
-const scrollable = { isScrollable: true }
-mount('ScrollView', ScrollView, scrollable)
+const scrollableOptions = { isScrollable: true }
+const scrollableChildren = commonChildren
+mount('ScrollView', ScrollView, scrollableOptions, scrollableChildren)
 
 const listableOptions = { isListable: true }
-mount('FlatList', FlatList, listableOptions)
-mount('SectionList', SectionList, listableOptions)
+const listableChildren = commonChildren
+mount('FlatList', FlatList, listableOptions, listableChildren)
+mount('SectionList', SectionList, listableOptions, listableChildren)
 
 const touchableOptions = { isPressable: true }
-const touchableChildren = {
-  Visible: { isLayoutable: true },
-}
+const touchableChildren = commonChildren
+mount('Text', Text, touchableOptions, touchableChildren)
 mount('Button', Button, touchableOptions, touchableChildren)
 mount('TouchableHighlight', TouchableHighlight, touchableOptions, touchableChildren)
 mount('TouchableNativeFeedback', TouchableNativeFeedback, touchableOptions, touchableChildren)

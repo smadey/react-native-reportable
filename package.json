@@ -1,6 +1,6 @@
 {
   "name": "react-native-reportable",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Easy to use declarative report for React Native",
   "main": "index.js",
   "license": "MIT",
